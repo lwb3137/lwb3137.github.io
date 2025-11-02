@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我的個人頁面 | GitHub Pages + jQuery</title>
+  <meta name="description" content="用 GitHub Pages 建立的個人網站示範，含 jQuery 互動與 AJAX。">
+  <style>
+    :root { --bg:#0f172a; --fg:#e2e8f0; --accent:#60a5fa; --card:#111827; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",sans-serif; background:#0b1220; color:var(--fg); }
+    header { position:sticky; top:0; backdrop-filter:saturate(180%) blur(8px); background:rgba(2,6,23,.6); border-bottom:1px solid rgba(255,255,255,.06); z-index:20; }
+    nav { display:flex; gap:16px; align-items:center; max-width:1024px; margin:auto; padding:12px 16px; }
+    nav a { color:var(--fg); text-decoration:none; opacity:.8; }
+    nav a:hover { opacity:1; }
+    nav .spacer { flex:1; }
+    .btn { cursor:pointer; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:var(--fg); padding:8px 12px; border-radius:10px; }
+    .container { max-width:1024px; margin:auto; padding:24px 16px; }
+    .hero { padding:72px 16px 48px; text-align:center; background: radial-gradient(1200px 400px at 50% -10%, rgba(59,130,246,.25), rgba(0,0,0,0)); }
+    h1 { font-size: clamp(28px, 5vw, 46px); margin:0 0 10px; }
+    h2 { font-size: clamp(22px, 3.5vw, 28px); margin: 20px 0 10px; }
+    p.lead { font-size: clamp(16px,2.5vw,20px); opacity:.85; }
+    .grid { display:grid; grid-template-columns: repeat( auto-fit, minmax(260px, 1fr) ); gap:16px; }
+    .card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:16px; }
+    footer { padding:40px 16px; text-align:center; opacity:.7; }
+    .muted { opacity:.75; }
+    code.inline { background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 6px; }
+    .badge { font-size:12px; border:1px solid rgba(255,255,255,.15); padding:2px 8px; border-radius:999px; opacity:.85; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    input, button { font: inherit; }
+    input[type="text"] { width:240px; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:var(--fg); }
+    .list { display:grid; gap:10px; margin-top:10px; }
+    .list .item { padding:10px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <strong>My Page</strong>
+      <a href="#about" class="nav-link">關於我</a>
+      <a href="#projects" class="nav-link">作品</a>
+      <a href="#playground" class="nav-link">jQuery 小遊樂場</a>
+      <span class="spacer"></span>
+      <button id="themeToggle" class="btn">🌙 深色/淺色</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>GitHub Pages + jQuery 個人頁</h1>
+      <p class="lead">這是一個最小可用的個人網站樣板。含 <span class="badge">jQuery</span> 互動、<span class="badge">AJAX</span> 範例與平滑捲動。</p>
+      <p class="muted">編輯 <code class="inline">index.html</code> 就能開始打造你的個人網站。</p>
+    </div>
+  </section>
+
+  <section id="about" class="container">
+    <h2>關於我</h2>
+    <p>哈囉！這裡放你的簡介、就讀系所、技能、興趣與社群連結。也可以放一張大頭貼。</p>
+  </section>
+
+  <section id="projects" class="container">
+    <h2>作品</h2>
+    <div class="grid" id="projectGrid">
+      <div class="card">
+        <h3>專案 A</h3>
+        <p class="muted">一句話介紹你的作品。可附上 <a href="#">連結</a>。</p>
+      </div>
+      <div class="card">
+        <h3>專案 B</h3>
+        <p class="muted">支援 GitHub Pages 的前端專案，把檔案放在此倉庫即可上線。</p>
+      </div>
+      <div class="card">
+        <h3>專案 C</h3>
+        <p class="muted">也可以把投影片、報告 DEMO 放在這裡。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="playground" class="container">
+    <h2>jQuery 小遊樂場</h2>
+    <div class="card">
+      <h3>1) 平滑捲動與顯示/隱藏</h3>
+      <div class="row">
+        <button id="toggleProjects" class="btn">顯示/隱藏 作品區</button>
+        <button id="scrollTop" class="btn">回到頂端</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>2) AJAX：抓 GitHub 公開倉庫</h3>
+      <div class="row">
+        <input type="text" id="ghUser" placeholder="輸入 GitHub 使用者（預設：octocat）">
+        <button id="loadRepos" class="btn">載入 Repos</button>
+      </div>
+      <div id="repoList" class="list"></div>
+      <p class="muted">提示：把使用者名稱改成你自己的，就能顯示你的倉庫。</p>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>3) 小表單（前端驗證示範）</h3>
+      <form id="contactForm">
+        <div class="row">
+          <input type="text" id="yourName" placeholder="你的名字">
+          <button class="btn" type="submit">送出</button>
+        </div>
+      </form>
+      <div id="formMsg" class="muted"></div>
+    </div>
+  </section>
+
+  <footer>
+    <small>© <span id="year"></span> Your Name — 用 GitHub Pages 部署</small>
+  </footer>
+
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    // 年份
+    $("#year").text(new Date().getFullYear());
+
+    // 深色/淺色切換（簡單示範：切 body class）
+    $("#themeToggle").on("click", function() {
+      $("body").toggleClass("light");
+      if ($("body").hasClass("light")) {
+        document.body.style.background = "#f7fafc";
+        document.body.style.color = "#1f2937";
+      } else {
+        document.body.style.background = "#0b1220";
+        document.body.style.color = "#e2e8f0";
+      }
+    });
+
+    // 平滑捲動
+    $(".nav-link").on("click", function(e) {
+      const target = $(this).attr("href");
+      if (target.startsWith("#")) {
+        e.preventDefault();
+        const $el = $(target);
+        $("html, body").animate({ scrollTop: $el.offset().top - 64 }, 400);
+      }
+    });
+
+    // 顯示/隱藏作品區
+    $("#toggleProjects").on("click", function() {
+      $("#projects").slideToggle(200);
+    });
+
+    // 回到頂端
+    $("#scrollTop").on("click", function() {
+      $("html, body").animate({ scrollTop: 0 }, 400);
+    });
+
+    // AJAX 載入 GitHub 倉庫
+    $("#loadRepos").on("click", function() {
+      const user = $("#ghUser").val().trim() || "octocat";
+      $("#repoList").empty().append($("<div/>").text("載入中..."));
+
+      $.ajax({
+        url: `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated`,
+        method: "GET",
+        dataType: "json"
+      })
+      .done(function(repos) {
+        $("#repoList").empty();
+        if (!repos || !repos.length) {
+          $("#repoList").append($("<div/>").addClass("item").text("沒有找到公開倉庫。"));
+          return;
+        }
+        repos.slice(0, 8).forEach(function(r) {
+          const $item = $("<div/>").addClass("item");
+          const $name = $("<a/>").attr({ href: r.html_url, target: "_blank", rel: "noopener" }).text(r.name);
+          const $desc = $("<div/>").addClass("muted").text(r.description || "（無描述）");
+          $item.append($("<strong/>").append($name)).append($desc);
+          $("#repoList").append($item);
+        });
+      })
+      .fail(function(xhr) {
+        $("#repoList").empty().append($("<div/>").addClass("item").text("載入失敗：" + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : "未知錯誤")));
+      });
+    });
+
+    // 簡單表單驗證
+    $("#contactForm").on("submit", function(e) {
+      e.preventDefault();
+      const name = $("#yourName").val().trim();
+      if (!name) {
+        $("#formMsg").text("請輸入名字 🙏");
+        return;
+      }
+      $("#formMsg").text(`Hi, ${name}! 表單僅示範前端驗證，未送往伺服器。`);
+      $("#yourName").val("");
+    });
+  </script>
+</body>
+</html>
